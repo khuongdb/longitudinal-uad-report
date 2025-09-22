@@ -1,0 +1,276 @@
+\documentclass[11pt, a4paper, openany]{book}
+\usepackage[a4paper, left=2.5cm, right=2.5cm, top=3cm, bottom=3cm]{geometry}
+
+% Header title
+\usepackage{fancyhdr}
+\setlength{\headheight}{14pt} % Fix the warning (slightly above suggested)
+\pagestyle{fancy}
+\fancyhf{} % clear all headers/footers
+% \fancyhead[LE,RO]{\thepage}   % Left pages: page number left, right pages: right
+% \fancyhead[LO]{\nouppercase{\rightmark}} % Chapter name on odd pages
+\fancyhead[LE]{\nouppercase{\leftmark}}  % Section name on even pages
+\fancyhead[RO]{\nouppercase{Longitudinal UAD}} % Right pages: short book title
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}     % Header line thickness
+% \renewcommand{\footrulewidth}{0pt}       % No footer line
+
+
+% \usepackage{arxiv}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage[english]{babel}
+\usepackage{csquotes}
+
+% Include cover page
+\usepackage{pdfpages}
+
+% Bibliography
+\usepackage[
+  backend=biber,
+  style=numeric,
+  % style=alphabetic,
+  sorting=none,
+  backref=true,
+  doi=true,
+  url=true,
+]{biblatex}
+\usepackage{doi}
+\AtEveryBibitem{\clearfield{urldate}}
+\DeclareSourcemap{  %ignore urldate field to not show (visit on)
+  \maps[datatype=bibtex]{
+    \map[overwrite=true]{
+      \step[fieldset=urldate, null]
+    }
+  }
+}
+\addbibresource{references.bib}
+
+% Acronyms
+\usepackage[nohyperlinks]{acronym}
+
+%% Math and scientific typesetting
+%% The amssymb package provides various useful mathematical symbols
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage[multi-part-units=single]{siunitx}
+\sisetup{
+  scientific-notation = true,
+  retain-unity-mantissa = false,
+  exponent-product = \times,
+  detect-all=true,
+  % detect-inline-weight = math,
+  separate-uncertainty,
+  output-exponent-marker=\ensuremath{\mathrm{e}}
+}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{amssymb}
+\usepackage{textcomp}  % for \textuparrow / \textdownarrow
+\input{math_commands}
+
+%% Figures and Tables format and placement
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{subcaption}
+\usepackage{framed,multirow}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{adjustbox}
+
+% MiniToC for ToC at the beginning of each chapter
+\usepackage{minitoc}
+\dominitoc  % activate minitocs
+
+% Support for easy cross-referencing
+\usepackage[capitalize]{cleveref}
+\crefname{section}{Sec.}{Secs.}
+\Crefname{section}{Section}{Sections}
+\Crefname{table}{Table}{Tables}
+\crefname{table}{Tab.}{Tabs.}
+\crefname{equation}{E.q}{E.qs}
+\Crefname{equation}{E.q}{E.qs}
+% \crefname{app}{Appendix}{Appendices}
+% \Crefname{app}{Appendix}{Appendices}
+
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}
+\newcommand{\subsubsubsection}[1]{%
+  \vspace{1em}%
+  \noindent\textbf{#1}\quad
+}
+
+%% Hyperref
+\usepackage{url}            % simple URL typesetting
+\usepackage{xurl}
+\usepackage{hyperref}
+\hypersetup{
+  breaklinks=true,
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=magenta
+}
+
+\title{Longitudinal Unsupervised Anomaly Detection (UAD) with diffusion models}
+
+%\date{September 9, 1985}  % Here you can change the date presented in the paper title
+%\date{}           % Or removing it
+
+\author{ Ba-Khuong Dang\\
+  ENSAI\\
+INRIA Grenoble }
+
+% Uncomment to remove the date
+\date{}
+
+% Uncomment to override  the `A preprint' in the header
+% \renewcommand{\headeright}{Preprint}
+% \renewcommand{\undertitle}{}
+% \renewcommand{\shorttitle}{Behrendt et al. \textit{Conditioned Diffusion Models for UAD in Brain MRIs}}
+
+%%% Add PDF metadata to help others organize their library
+%%% Once the PDF is generated, you can check the metadata with
+%%% $ pdfinfo template.pdf
+% \hypersetup{
+% pdftitle={A template for the arxiv style},
+% pdfsubject={q-bio.NC, q-bio.QM},
+% pdfauthor={David S.~Hippocampus, Elias D.~Striatum},
+% pdfkeywords={First keyword, Second keyword, More},
+% }
+
+\begin{document}
+
+% Cover page
+% \pagestyle{empty}
+\includepdf[pages={1}]{cover.pdf}
+\setcounter{page}{1}
+
+% Title page
+\frontmatter
+\maketitle
+
+% \begin{abstract}
+% The application of supervised models to clinical screening tasks is challenging due to the need for annotated data for each considered pathology. Unsupervised Anomaly Detection (UAD) is an alternative approach that aims to identify any anomaly as an outlier from a healthy training distribution. A prevalent strategy for UAD in brain MRI involves using generative models to learn the reconstruction of healthy brain anatomy for a given input image. As these models should fail to reconstruct unhealthy structures, the reconstruction errors indicate anomalies. However, a significant challenge is to balance the accurate reconstruction of healthy anatomy and the undesired replication of abnormal structures. While diffusion models have shown promising results with detailed and accurate reconstructions, they face challenges in preserving intensity characteristics, resulting in false positives.
+% \end{abstract}
+
+
+% Acknowledgement
+\chapter*{Acknowledgements}
+I would like to express my sincere gratitude for the opportunity to work on this
+project with Statify team at Inria Grenoble. Special thanks to my internship supervisors Dr. Florence Forbes
+for her constructive feedback and advice throughout the entire project. Her expertise and insightful guidance were instrumental in addressing some of our key challenges. Additionally, I extend my appreciation to my ENSAI professors, specially my internship advisor professor Francois Portier, for their amazing academic guidance.
+\clearpage
+
+% ToC
+\tableofcontents
+
+% Define acronym
+\chapter*{List of Acronyms}
+\begin{acronym}[AUPRC]
+  \acro{AD}{Anomaly Detection}
+  \acro{AUROC}{Area Under the Receiver Operating Characteristic curve}
+  \acro{AUPRC}{Area Under the Precision-Recall curve}
+  \acro{DDIMs}{Denoising implicit models}
+  \acro{DDPMs}{Denoising Probabilistic Diffusion Models}
+  \acro{DMs}{Diffusion Models}
+  \acro{FA}{Feature Attention}
+  \acro{FAM}{Feature Attention Module}
+  \acro{FN}{False Negative}
+  \acro{FP}{False Positive}
+  \acro{GAN}{Generative Adversarial Networks}
+  \acro{GMs}{Generative Models}
+  \acro{LAF}{Longitudinal Attention Fusion}
+  \acro{LAFM}{Longitudinal Attention Fusion Module}
+  \acro{SDM}{Spatial Diffusion Model}
+  \acro{TDM}{Temporal Diffusion Model}
+  \acro{TN}{True Negative}
+  \acro{TP}{True Positive}
+  \acro{UAD}{Unsupervised Anomaly Detection}
+  \acro{VAE}{Variational Autoencoders}
+\end{acronym}
+
+% List of Notations / Symbols
+\chapter*{List of Notations / Symbols}
+% \resizebox{\textwidth}{!}{%
+\begin{tabular}{l@{\hspace{1.5cm}}p{13cm}}
+  % \hline
+  % \textbf{Symbol} & \textbf{Description} \\
+  % \hline
+  $\mathbf{X}^i_{1 \leq i \leq N}$ & Set of observed images of patient $i$ through time \\
+  $N$ & Number of patients \\
+  $\rvx^i_l$ & Observation of patient $i$ at time point $l$. We often omit superscript $i$ and subscript $l$ for brevity. \\
+  $l \in [1 \dots L]$ & Longitudinal time point (time indexed) \\
+  $\rvx$      & Original image (potential anomalous) $\in \mathbb{R}^{h \times w}$ \\
+  $\hat\rvx$      & Reconstructed image (can be psuedo-healthy) $\in \mathbb{R}^{h \times w}$\\
+  $D_p$      & Pixel anomaly score map / pixel distance $\in \mathbb{R}^{h \times w}$\\
+  $D_f$ & Feature distance $\in \mathbb{R}^{h \times w}$\\
+  $q(\rvx)$ & True probability distribution of $\rvx$ that we want to learn and sample from. \\
+  $p_{\theta}(\rvx)$ & Estimated distribution of $\rvx$ from diffusion model. \\
+  $\epsilon_{\theta}$ & Output of diffusion model, with parameter $\epsilon$. \\
+  $\mu_{\theta}(t), \Sigma_{\theta}(t)$ & Mean and variance of predicted posterior of diffusion model. \\
+  $\text{Enc}_{\phi}$ & Semantic encoder with parameter $\phi$ \\
+  $\rvy$ ($\rvy_{\text{sem}}$) & Semantic representation of $\rvx \in \mathbb{R}^d$ \\
+  $\beta_t$ & Noise schedule of diffusion model. \\
+  $t \in [1 \dots T]$ & Time step of diffusion model \\
+  $\Phi$ ($\text{FE}_{\Phi}$) & Feaure extractor network from FAM, with parameter $\Phi$ \\
+  $\lambda_{DL}$ & Hyperparameter of Feature Extract network controls the strength of distillation losses \\
+  $v$ & Hyperparameter of FAM that controls the importance of pixel error \\
+  $\rvs$, $D_{\text{anomaly}}$ & Anomaly score map $\in \mathbb{R}^{h \times w}$ from FAM \\
+  $\mathbf{S}_i$ & Set of anomaly score map for $L$ time point for 1 patient $i$ \\
+  $\rvs_{\text{ref}}$ & Reference anomaly score map $\in \mathbb{R}^{(L-1) \times h \times w}$ for 1 target anomaly score map (LAFM module)\\
+  $\rvs_{\text{temp}}$ & Updated anomaly score map from LAFM after temporal smoothing operator \\
+  $\mathbf{S}_{\text{temp}}$ & Set of updated anomaly score map from LAFM $\in \mathbb{R}^{L \times h \times w}$ \\
+  $\beta$, $\gamma$ & Hyperparameters of LAFM that control the correction of false positive and false negative \\
+  $k_{mf}$ & Kernal size of median filter of LAFM \\
+  $\mathbf{X}_i^{\mathcal{O}}$ & Set of observed data for patient $i$. We often omit subscript $i$ for brevity \\
+  $\mathbf{X}_i^{\mathcal{M}}$ & Set of missing data for patient $i$. We often omit subscript $i$ for brevity \\
+  $\text{Enc}_{\omega}$ & Semantic encoder of TDM (RRDB net) \\
+  $\mathbf{Z}$ & List of semantic representation from semantic encoder RRDB in TDM \\
+  $\mathbf{z}_{\text{sem}, i} \in \mathbf{Z}$ & Semantic representation from block $i$ of RRDB $\in \mathbb{R}^{h \times w}$ \\
+  % \hline
+\end{tabular}
+
+% List of figures
+\listoffigures
+
+% List of Tables
+\listoftables
+
+% Main sections
+% \clearpage
+% \pagestyle{plain}
+% \setcounter{page}{1}
+\mainmatter
+\input{sections/introduction}
+
+\input{sections/background}
+
+\input{sections/sdm}
+
+\input{sections/experiment}
+
+\input{sections/results}
+
+\input{sections/tdm.tex}
+
+\input{sections/conclusion.tex}
+
+% ----------------------------
+% Bibliography
+% ----------------------------
+% \bibliographystyle{unsrtnat}
+% \bibliography{references}
+% \clearpage
+\printbibliography
+
+% ----------------------------
+% Appendices
+% ----------------------------
+\input{sections/appendix.tex}
+
+\end{document}

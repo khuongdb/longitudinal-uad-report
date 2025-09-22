@@ -1,0 +1,23 @@
+\section{UAD with Longitudinal VAE}
+
+- Rithy internship results. 
+
+Error threshold:
+
+- image: reconstruction error of the whole image.
+
+- pixel difference $| X_{i,j} - \hat{x}_{i, j} |$: for each pixel compare to the threshold of 95th percentile. 
+
+- pixel\_all difference: $| x_{i, j} - \hat{x}_{i, j} |$ for each image of the training set, FOR EACH position select the 95th percentile as the threshold for each position. 
+
+- Questions: What is the combination of VAE and LVAE in residual error image. 
+
+\section{Lyon team}
+
+- Disease Course Mapping. 
+
+- Save only validation loss for each epoch. 
+
+- Train VAE independently, and then train the Longitudinal statistical model. 
+
+

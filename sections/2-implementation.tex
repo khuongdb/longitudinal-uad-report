@@ -1,0 +1,43 @@
+\section{Implementation}
+\label{sec:implementation}
+
+\subsection{Material notes}
+
+PositionEmbedding: \href{https://medium.com/thedeephub/positional-encoding-explained-a-deep-dive-into-transformer-pe-65cfe8cfe10b}{link}
+
+\subsection{3D voxels adaptation}
+
+Our dataset is collection of 3D voxel MRI scan, while most of the DDPM models are implemented to work with 2D images. Also, we will utilize all three modalities of the MRI scan (T1, PD, MD) following \cite{oudoumanessahFrugalUnsupervisedDetection2023}, so we need to make some adaptations to existing models or using additional neural networks. 
+
+\subsubsection{3D Unet Architecture}
+
+The first method is to modify the underlying U-Net architecture to serve as our denoiser model. This modification involved replacing 2D components with their 3D equivalents to accommodate volumetric medical images and integrating embedding layers, Residual Blocks (ResBlocks), Sigmoid Linear Unit (SiLU) activation functions, group normalization, attention mechanisms, and fully connected layers to enhance model performance. 
+
+This can be done following the work of \cite{3D-DDPM}. In addition to the UNet adaptation, we also need to employ the 3D version of simplex noise from \cite{anoDDPM}. 
+
+\subsubsection{Two stages approach with VQ-GAN and diffusion model}
+
+Another approach to avoid computational burden when working with 3D images is using two-steps approach: (i) encode the images into low dimensional latent space, and subsequently (ii) train a diffusion probabilistic model on the latent representation of the data. \cite{khaderDDPM3DVQGan} employ this architecture using VQ-GAN \cite{VQGan} to compress the images. 
+
+\subsection{Toy experience}
+
+For the toy example, we will use the Starmen dataset with longitudinal movement of the left hand. 
+
+\subsubsection{Base Line}
+
+We will compare our performance with longitudinal VAE models, in particular: 
+
+\begin{itemize}
+    \item Unsupervised Learning of Orthogonal Mixed-Effects Trajectory Modeling for High-Dimensional Longitudinal Data Analysis \href{https://github.com/MChen808/UOMETM/tree/main}{UOMETM}
+\end{itemize}
+
+We can categorize longitudinal diffusion models into 2 main categories: (i) sequence aware diffusion models and (ii) latent diffusion models. Since diffusion models (DMs) operate in the same space as original images and not low dimension latent space, latent diffusion models (LDM) actually refer to two-stages approach: first compress the image into a representative latent space and then train the diffusion models on this latent space. LDMs can generate high resolution image synthesis \cite{rombachLDM} and realistic brain MRI scan \cite{pinayaLDM}. \cite{puglisiBrLP} improve by introducing ControlNet and Auxialiry model to enhance spartio temporal disease progression with prior knowledge. We will use the implemented version of LDMs from \href{https://github.com/Project-MONAI/GenerativeModels/tree/main}{MONAI Generative Models}
+
+\begin{itemize}
+    \item SADM: Sequence-Aware Diffusion Model \href{https://github.com/ubc-tea/SADM-Longitudinal-Medical-Image-Generation}{SADM repo}
+
+    \item Longitudinal Variational Autoencoder \href{https://github.com/bsauty/longitudinal-VAEs}{LVAE}
+    
+    \item Latent Diffusion Models: 
+
+\end{itemize}

@@ -1,0 +1,153 @@
+\chapter{Background}
+\label{chap:background}
+
+This chapter provides an overview of the mathematical background of diffusion models. We first discuss denoising probabilistic diffusion models in \cref{sec:ddpm}, which form the theoretical foundation for modern diffusion-based generation. Next, we introduce denoising diffusion implicit models (DDIMs) in \cref{sec:ddim}, that uses a non-Markovian process to accelerate the sampling process of the original diffusion models. Finally, we cover the principle of guided diffusion models in \cref{sec:guided-dms}, which uses conditions or contexts to steer the generation process, enabling more controlled and targeted outputs.
+
+\minitoc
+
+\section{Denoising Probabilistic Diffusion Models}
+\label{sec:ddpm}
+
+\newcommand{\ExpMp}[2]{\mathrm{Exp}^{\rmM}_{#1, t}(#2)}
+\newcommand{\tangentM}{\rmT_{\rvp}\rmM}
+
+\ac{DDPMs} \cite{hoDDPM} are generative models aim to learn a probability distribution $p_{\theta}(\rvx)$ that closely resembles the real data distribution $q(\rvx)$. In diffusion-based generative models learn, we gradually add noise to our original clean image, each step will slightly corrupt the image until it becomes almost featureless distribution. Normally, we choose the noise so that at the end of the diffusion process, we end up with a normal distribution $\gN(0, \rmI)$, which is easy to sample from in our generative process. \ac{DDPMs} is composed of two processes: \textit{forward process} and \textit{backward process} (generative process).
+
+\subsubsubsection{Forward process} In the forward process, we gradually add noises to our input $\rvx \sim q(\rvx)$ to generate a series of noisy images $(\rvx_1, \rvx_2, ..., \rvx_T)$ for many time steps $T$. The noise level $t$ of an image $\rvx_t$ is predefined by a noise schedule $\beta_t \quad t \in [1, T]$, which is originally implemented as a linear schedule going from $\beta_0 = 10^{-4}$ to $\beta_T = 0.02$ in \cite{hoDDPM}. The forward process is a non-homogenous Markov chain process, with the following kernel transition: 
+\begin{align}
+    q(\rvx_{1:T} \mid \rvx_0) &:= \prod_{t=1}^{T} q(\rvx_t \mid \rvx_{t-1}) \\
+    q(\rvx_t \mid \rvx_{t-1}) &= \gN\left(\rvx_t;\, \sqrt{1 - \beta_t}\, \rvx_{t-1},\, \beta_t I\right) \label{eq:forward} \quad \text{for } t = 1,\ldots,T
+\end{align}
+
+\cite{hoDDPM} defines $\alpha = 1 - \beta_t$ and $\bar\alpha = \prod_{s=1}^{t} \alpha_t$, and the forward process has a special property that we can use to jump directly from $\rvx_0$ to any noisy $\rvx_t$ given a time step $t$ \footnote{This is referred to as the Nice property of diffusion model. See math derivation from \cite{soto2024ddpmLecture}}:
+\begin{align}
+ q(\rvx_t | \rvx_0) = \gN(\rvx_t; \sqrt{\bar\alpha}\rvx_0, (1 - \bar\alpha_t) \rmI) \label{eq:q-xt} 
+\end{align}
+Using the reparameterization trick, we can express $\rvx_t$ as: 
+\begin{align}
+    \rvx_t = \sqrt{\bar\alpha} \rvx_0 + \sqrt{\bar\alpha_t} \epsilon \quad \mathrm{with} \quad \epsilon \sim \gN(0, \rmI) \label{eq:xt-from-x0}
+\end{align}
+
+We see that with large enough $T$ (normally $T=1000$), $\bar\alpha_t \to 0$, and $\rvx_t$ converge to a Gaussian distribution $\gN(0, \rmI)$. With a learned reversed process, we can sample from this normal distribution to generate new image from the original distribution. 
+
+\subsubsubsection{Generation process} for image generation, we start from a random variable $\rvx_T \sim \gN(0, \rmI)$ and the generation process is given by: 
+\begin{align}
+    p(\rvx_{0:T}) &= p(\rvx_T) \prod_{t=1}^T{p_{\theta}(\rvx_{t-1} | \rvx_t)} \\
+    \mathrm{with} \quad p_{\theta}(\rvx_{t-1} \mid \rvx_t) &= \gN (\rvx_{t-1}; \mu_{\theta}(\rvx_t, t), \Sigma_{\theta} (\rvx_t, t)) \label{eq:ddpm-sample}
+\end{align}
+
+The denoising network $p_{\theta}$ is learned by optimizing model parameters $\theta$ to predict $\rvx_{t-1}$ from $\rvx_t$, for each $t \in [1 ... T]$. This is equivalent to gradually remove noise at each time step, so we can generate noise-free image $\hat{\rvx}$ at $t = 0$. Instead of learning both $\mu_{\theta}$ and $\Sigma_{\theta}$, \cite{hoDDPM} show that by conditioning the true posterior on $\rvx_0$, we can fix $\Sigma_\theta(\rvx_t, t) = \Sigma(t)$, and the mean $\mu_\theta$ can be derived using a noise prediction network $\epsilon_{\theta}$ \cite{soto2024ddpmLecture}: 
+\begin{align}
+    \Sigma_\theta(\rvx_t, \rvx_0, t) &= \Sigma(t) = \frac{1 - \alpha_{t-1}}{1 - \alpha_t} \, \beta_t \mathbf{I} \\
+    \mu_{\theta} (\rvx_t, \rvx_0, t) &= \frac{1}{\sqrt{\alpha_t}} ( \rvx_t -\frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \, \epsilon_{\theta} (\rvx_t, t)) \label{eq:epsilon}
+\end{align}
+
+\subsubsubsection{Learning objective}: $\epsilon_\theta (\rvx_t, t)$ in 
+\cref{eq:epsilon} is the output of a time conditioned network, which \cite{hoDDPM} use UNet architecture to predict the noise added to the original image $\rvx_0$ at time $t$. The network is trained with loss function: 
+\begin{align}
+    \mathcal{L} (\theta) &= ||\epsilon - \epsilon_{\theta} (\rvx_t, t) ||^2 = || \epsilon - \epsilon_{\theta}(\sqrt{\bar\alpha} \rvx_0 + \sqrt{\bar\alpha_t} \epsilon)||^2 \label{eq:loss-ddpm} \\
+    \mathrm{where} &\quad \rvx_0 \sim q(\rvx_0), \quad t \sim \mathrm{Unif}[1, T], \quad \epsilon \sim \gN(0, \rmI) \nonumber
+\end{align}
+
+\section{Denoising Diffusion Implicit Models}
+\label{sec:ddim}
+
+\subsubsubsection{DDIM sampling scheme}: one disadvantage of \ac{DDPMs} is during inference, we have to go through each step in reverse $t \in [T ... 0]$, and with large $T$ comes with longer inference time. \ac{DDIMs} \cite{songDDIM} accelerate \ac{DDPMs} by introducing a non-Markovian sampling process $q_{\sigma}(\rvx_{t-1} \mid \rvx_t, \rvx_0)$. \ac{DDIMs} defines a new variance schedule $\sigma$ that is chosen to have the same marginal distribution as in \cref{eq:q-xt}. So the training procedure and objective stay the same as in \ac{DDPMs}, but only the sampling process is different. Based on \cref{eq:xt-from-x0}, we can predict noise-free observation $\hat\rvx$ as: 
+\begin{align}
+    \hat\rvx_0 = f_{\theta}(t, \rvx_t) = \frac{\rvx_t - \sqrt{1 - \alpha_t} \cdot \epsilon_{\theta}(\rvx_t, t)}{\sqrt{\alpha_t}} \label{eq:pred-x0-from-xt}
+\end{align}
+
+\cite{songDDIM} generalize the \ac{DDPMs} sampling scheme as: 
+\begin{align}
+    \rvx_{t-1} = \sqrt{\alpha_{t-1}} \, f_{\theta}(t, \rvx_t) + \sqrt{1 - \alpha_{t-1} - \sigma_t^2} \, \epsilon_{\theta}(\rvx_t, t) + \sigma_t \, \epsilon \label{eq:ddim-sample-xt}
+\end{align}
+
+where $\epsilon \sim \gN(0, \rmI)$ and $\sigma_t$ controls the stochasticity of the sampling process. For \ac{DDPMs}, we choose $\sigma_t = \sqrt{(1 - \bar{\alpha}_{t-1})/(1 - \bar{\alpha}_t)} \sqrt{1 - \bar{\alpha}_t/\bar{\alpha}_{t-1}}$, thus \ac{DDPMs} will always have a stochastic element in its sampling step \footnote{This is also why we have to perform \ac{DDPMs} sample step by step instead of deriving $\rvx_0$ directly from $\rvx_T$ by reversing \cref{eq:xt-from-x0}. \cite{soto2024ddpmLecture} show both the mathematical and intuitive reasons behind this}. On the other hand, if we set $\sigma_t = 0$, we have an extreme case of deterministic DDIM sampling process, which means that $\rvx_{t-1}$ is fully determined given $\rvx_0$ and $\rvx_t$. Formally, the deterministic DDIM sampling scheme is defined as: 
+\begin{align}
+    p_{\theta}(\rvx_{t-1} \mid \rvx_t) &= \mathcal{N} (\sqrt{\alpha_{t-1}} \, f_{\theta}(t, \rvx_t) + \sqrt{1 - \alpha_{t-1}} \, \epsilon_{\theta}(\rvx_t, t), 0)\label{eq:ddim-posterior-deterministic} \\
+    \rvx_{t-1} &= \sqrt{\alpha_{t-1}} \, f_{\theta}(t, \rvx_t) + \sqrt{1 - \alpha_{t-1}} \, \epsilon_{\theta}(\rvx_t, t) \label{eq:ddim-sample-deterministic}
+\end{align}
+
+\subsubsubsection{DDIM noise encoding}: As derived in \cite{songDDIM}, \cref{eq:ddim-sample-deterministic} can be viewed as the  Euler method to solve an ordinary differential equation (ODE). Consequently,  we can reverse the generation process by using the reversed ODE. With enough discretization steps, we can encode $\rvx_{t+1}$ given $\rvx_t$ with: 
+\begin{align}
+    \rvx_{t+1} = \rvx_t + \sqrt{\bar\alpha_{t+1}} \left[ \left(\sqrt{\frac{1}{\bar\alpha_t}} - \sqrt{\frac{1}{\bar\alpha_{t+1}}} \right) \rvx_t + \left( \sqrt{\frac{1}{\bar\alpha_{t+1}} - 1} - \sqrt{\frac{1}{\bar\alpha_t} - 1}\right) \epsilon_{\theta} (\rvx_t, t) \right] \label{ep:ddim-encode}
+\end{align}
+
+By applying \cref{ep:ddim-encode} for $t \in \{1, ..., T-1\}$, we can encode a clean image into a noisy image $\rvx_T$. We refer to this $\rvx_T$ as \emph{stochastic subcode} of $\rvx_0$, and \cite{DiffAE} show that this stochastic encoding process stores fine-grain detail about $\rvx_0$. Starting from this stochastic subcode, we can then decode it using \cref{eq:ddim-sample-xt} to have a near-exact reconstruction of $\rvx_0$ \cite{DiffAE, lozuponeLDAE2025, wolleb2022DDPM-weaksupervise}.
+
+\section{Guided diffusion models}
+\label{sec:guided-dms}
+
+Diffusion models described in \cref{sec:ddpm} is designed to generate unconditional images, but many downstream tasks require generating images that adhere to a specific condition. Given an input image $\rvx$ and its corresponding class or context $\rvy$, we want to train a diffusion model that can generate images belong to a given class $\rvy$ \footnote{I slightly abuse the term "class" here to align with common usage in the literature, even though in the UAD setting we typically do not have access to the true class label of the anomalous subject. Throughout the rest of this report, the terms "class" and "context" will be used interchangeably.}. In this section, we briefly discuss several techniques that are used to guide the diffusion process. 
+
+\subsubsubsection{Gradient guided diffusion}: \citeauthor{dhariwalDiffusionModelsBeatGAN2021}~\cite{dhariwalDiffusionModelsBeatGAN2021} incorporate the class guidance into the denoising process by training a separate classifier network $C$ to distinguish between class labels. The network $C(\rvy \mid \rvx_t, t)$ is trained at every noise step $t$ with corresponding noisy image $\rvx_t$ obtained by \cref{eq:xt-from-x0}. During DDIM sampling, the predicted noise in \cref{eq:ddim-sample-deterministic} is modified as: 
+\begin{align}
+    \hat{\epsilon}_{\theta} = \epsilon_{\theta} (\rvx_t, t) - s \sqrt{1 - \bar\alpha_t} \nabla_{\rvx_t} \log C(\rvy \mid \rvx_t, t) \label{eq:class-guide-epsilon}
+\end{align}
+
+where $s$ is a parameter controls the strength of the guidance, and $\nabla_{\rvx_t} \log C(\rvy \mid \rvx_t, t)$ can be interpreted as log gradient of the likelihood of class $\rvy$ given a noisy image $\rvx_t$. From probabilistic model perspective, by taking a step in the opposite direction of this gradient, we can move toward region with higher density, and theoretically that will allow us to arrive at the mode of the true distribution $p(\rvy \mid \rvx_t)$. In the context of diffusion sampling process, this steers the generation of $\rvx_{t-1}$ toward the desire class $\rvy$. We note that this highlights the connection between diffusion models and score-based models \cite{songScoreBasedGenerativeModeling2021}, and we can reformulate $\epsilon_{\theta}$ in \cref{eq:ddim-sample-xt} to be a score-based function, which estimated the deviation should happen at each time step $t$ to arrive at a clean image $\rvx_0 \sim q(\rvx)$, as shown in \cite{DDAD, luoUnderstandingDiffusionModels2022}: 
+\begin{align}
+    \nabla_{\rvx_t} \log p_{\theta} (\rvx_t) = - \frac{1}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_{\theta} (\rvx_t, t) \label{eq:connection-epsilon-score-func}
+\end{align}
+
+\subsubsubsection{Classifier-free guided diffusion}: one major disadvantage of gradient guidance method is that we need to train an additional class condition network $C(\rvy \mid \rvx_t, t)$, and output quality depends on the performance of the classification network, introducing potential bias \cite{berceaDDPMforMedicalImagesStudy2024}. For the network to learn effectively, For the network to learn effectively, we need to train it for each class $\rvy$, at every noise level$t$, and for every $\rvx_0$. This approach is computationally expensive. There are some alternative methods that leverage this score-based function without needing to train a classifier network. One approach is to inject the context directly into the UNet to provide guidance for the network. Formally, given a noisy image $\rvx_t$ at time step $t$ and a context $\rvy$, we want to update our noise prediction output from \cref{eq:epsilon} become $\epsilon_{\theta}(\rvx_t, t, \rvy)$ to incorporate this information.
+ Our loss function in \cref{eq:loss-ddpm} becomes:
+\begin{align}
+    \mathcal{L} (\theta) &= || \epsilon - \epsilon_{\theta}(\rvx_t, t, \rvy)||^2 \label{ep:loss-cond-ddpm}
+\end{align}
+
+There are several methods for implementing conditioning mechanisms. Some earlier approaches use the input $\rvx$ directly as context and concatenate this information with the noisy image $\rvx_t$. In this implementation, the context is \emph{spatial context}, i.e. $\rvy \in \mathbb{R}^{h \times w}$. However, this strategy has the potential drawback of revealing the target to the network, since subtracting $\rvx$ from $\rvx_t$ yields the exact noise that was added. To address this, more recent approaches use \emph{non-spatial context} $\rvy \in \mathbb{R}^d$, which is generated by a semantic encoder network. LDM \cite{rombachLDM} employs a cross-attention module to inject context at every step of the UNet, while cDDPM \cite{behrendt2025cDDPM} concatenates the context with the time embedding. 
+
+% \begin{itemize}
+%     \item DDAD \cite{DDAD} 
+% \end{itemize}
+
+% \subsection{Longitudinal data analysis}
+
+% \subsubsection{Reimannian manifold}
+
+% We made the hypothesis that the data of interest belong to a particular subspace of the feature space, that individual trajectories are described by curves on this subspace and that the repeated observations are points on these curves. This subspace is thus central to the disease modeling as it entirely defines the space of possible measurements and consequently the individual spatiotemporal trajectories.
+
+% \begin{description}
+%     \item[Manifold]: is a topological space for which each point presents a neighborhood that is homeomorphic to the Euclidean space. To this extend, there exist collections of mapping (\emph{atlas}) that transform local neighborhood around point $\mathbf{p}$ to a linear space.
+    
+%     \item[Tangent space]: for any point $\rvp$ in a smooth manifold $\rmM \in \sR^{n}$, its \emph{tangent} space $\rmT_{\rvp}\rmM$ is a linear approximation of local \emph{region} around $\rvp$
+
+%     \item[Geodesic]: The geodesics correspondes to the shortest path betwen two points on the manifold $\rmM$, similar to a straight line in Euclidean space. Given $\gamma : I \in \sR \to \rmM$, is a geodesic of $\rmM$ if $\nabla_{\dot\gamma}\dot\gamma = 0$, i.e. a smooth curve with zero acceleration. $I$ is an interval of real number, which represents the parameter domain — usually time or some abstract "path parameter" along the curve. $\gamma$ is a function that maps $t \in I$ to a point $\gamma(t)\rmM$. It is a parametrized curve that traces out a path on the manifold $\rmM$. 
+    
+%     Intuition about $\gamma$: Think of $\gamma(t)$ as a particle moving along the surface of $\rmM$ as time $t$ varies:
+%     \begin{itemize}
+%         \item You input a time  or parameter $t$
+%         \item You get a point on the manifold $\rmM$
+
+%         \item The \emph{image} of $\gamma$ is defined as: $\mathrm{Im}(\gamma) = \{\gamma(t) \in \rmM | t \in I\}$
+%     \end{itemize}
+
+%     \item[Exponential map]: at any point $\rvp$ in $\rmM$ and a vector $\rvv \in \tangentM$, the mapping $\ExpMp{\rvp}{\rvv}$ is Riemannian exponential map, that is the point we can reach at time $t$ from $\rvp$ by taking a sequence of steps from $\rvp$ with velocity $\rvv$. 
+
+%     \item[Parallel-transport]: 
+% \end{description}
+
+% \subsubsection{Spatiotemporal disease progression modeling}
+
+% \begin{align}
+%     \rvy_{i,j} &= \eta^{\rvw_i}(\gamma_0, \psi_i(t_{i,j})) + \varepsilon_{i,j} \label{eq:mix-effect} \\
+%     \psi_i(t_{i,j}) &= t_{i, j} \to \alpha_i \left( t - \tau_i - t_0 \right) + t_0 \label{eq:temporal-effect} \\
+%     \psi_i(t_{i,j}) &= t_{i, j} \to \rvv_0 e^{\xi_t} \left( t - \tau_i \right) + t_0 \label{eq:temporal-effect2}\\
+%     \eta^{\rvw_i} (\gamma_0, t) &:= \mathrm{Exp}_{\gamma_0(t)}(P_{\gamma_0, t_0, t}(\rvw_i)) \label{eq:spartial-effect} \\
+%     \gamma_0: I \in \sR \to \rmM \in \sR^N &:= (\rvp_0, t_0, \rvv_0) \label{eq:fix-effect} \\
+%     \rvp_0 &= \gamma_0 (t_0) \\
+%     \rvv_0 &= \dot\gamma_0 (t_0) 
+% \end{align}
+
+% \href{https://leaspy.readthedocs.io/en/latest/mathematics.html#riemanian-framework}{leaspy documentation} that explains: 
+% \begin{description}
+%     \item[Population trajectory and fix effect]: The \textbf{fixed-effects} of the model are the parameters of the average geodesic given in \cref{eq:fix-effect}. This population trajectory is fully described by its initial condition: the point \(\rvp_0\) on the manifold, the time-point \(t_0\) and the velocity \(\rvv_0\). 
+
+%     \item[Individula trajectory with spartial random effects] is defined by \emph{space shift} $\rvw_i \in \tangentM$ in \cref{eq:spartial-effect}. It represents the direction in which the group-average trajectory is shifted to approximate the data $(\rvy_{i,j})_{1 \leq j \leq k}$ of the $i$-th individual. We note that $\rvw_i$ is only one vector defined at the starting point $(\rvp_0, t_0)$, and is parallel-transport along the curve $\gamma_0$ at any given $t$. This gives us the directional vector that should happen at any $t$ to derive the individual curve from population curve. The resulting vector writes $P_{\gamma_0, t_0, t} (\rvw_i)$. The exponential map of the collection of these vector writes $\mathrm{Exp}_{\gamma_0 (t)} (P_{\gamma_0, t_0, t} (\rvw_i))$ defines the individual trajectory $\eta^{\rvw_i} (t)$.  
+
+%     \item[Individual trajectory with temporal random effects] in \cref{eq:temporal-effect} is defined by \emph{time shift} $\tau_i \in \sR$ and \emph{accelerator shift} $\alpha_i \in \sR$. For each individual patient $i$, $\psi_i(t_{i,j})$ is the temporal reparameterization that represents patient timeline. It transforms the individual observation time point from chronological time (real patient age) to disease time point. This transformation accounts for difference between individual reference time (\emph{onset age}) $\tau_i$ and population reference time $t_0$, and the speed at which a patient disease progresses $\alpha_i$. If a patient starts to have symptoms of the disease earlier (resp. later) than the average population, it impacts the initial condition with $(\tau_i - t_0) > 0$ (resp. $(\tau_i - t_0) < 0$). Similarly, if a patient has a faster (resp. slower) disease progression, the individual trajectory is impacted by acceleration factor $\alpha_i > 0$ (resp. $\alpha_i < 0$). In line with \cite{SautyLongitudinalVAE2022}, we can rewrite $\alpha_i = e^{\xi_i}$ with $\xi_i$ as individual log speed factor in \cref{eq:temporal-effect2}, similar to the implementation in the \texttt{leaspy} package. \footnote{List of \texttt{leaspy} notations and DAG names can be found on \href{https://leaspy.readthedocs.io/en/latest/notations.html}{https://leaspy.readthedocs.io/en/latest/notations.html}}. These two parameters $(\xi_i, \tau_i)$ form the temporal part of the \textbf{random effects} and explain the temporal variability in our dataset.  
+
+%     \item[Residual noise]: finally, we denote $\epsilon_{i, j}$ as random noise at time $j$ that the model does not capture. 
+% \end{description}
+

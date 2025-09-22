@@ -1,0 +1,31 @@
+\section{Datasets}
+\label{sec:dataset}
+
+\subsection{Synthetic Starmen dataset}
+
+Synthetic longitudinal dataset of starmen images \footnote{The dataset is acquired from \href{https://zenodo.org/records/5081988}{https://zenodo.org/records/5081988}} (64x64), based on the longitudinal diffeomorphic model. The cross-sectional variability of the population is prescribed by a diffeomorphism localized at four control points: the head, right arm and legs. The common progression timeline, on the other hand, is generated through a displacement of the left arm only.
+This way, the effects of time progression, raising the left arm, are (spatially) independent from the inter-variability of the shapes. All subjects raise the left arm but vary in shape with different position of their legs and arms. The dataset is comprised of $N=1000$ objects, each with $10$ visit at different time points. 
+
+The dynamics of progression is given by an affine reparametrization of the age at the visit, characterized by individual onset and acceleration factors, such that the true progression of the disease is given by. 
+
+The dataset description is given in \verb|df.csv| files, with columns: 
+
+\begin{itemize}
+    \item \texttt{tau}:  the onset age - the age at which a disease starts or a developmental process begins.
+    
+    \item \texttt{t}: the actual age or observation time point.
+    
+    \item \texttt{path}: absolute path to the subject gray scale image (1x64x64). The image is generated from `vtk` file. 
+    
+    \item \texttt{id}: subject ID
+
+    \item \texttt{alpha}: the acceleration factor - how fast a disease developes. 
+    
+\end{itemize}
+
+\subsubsection{Some useful github repos to process - visualize the dataset}
+
+\begin{itemize}
+    \item \href{https://github.com/MChen808/UOMETM/tree/main}{UOMETM repo}
+
+\end{itemize}

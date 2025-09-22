@@ -1,0 +1,101 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{hyperref}
+% \input{math_commands}
+
+
+\title{Longitudinal Unsupervised Anomaly Detection (UAD) with diffusion models:\\
+Notes for Khuong Internship}
+\author{ }
+\date{April 2025}
+
+\usepackage{amsmath}
+
+\begin{document}
+
+\maketitle
+
+\section{Overall goal}
+
+ Unsupervised anomaly detection is performed by learning to model healthy or normal reference data. The reference model is then  used to determine a distance to normality and  for scoring anomalies. Among such strategies, we will first consider reconstruction-based anomaly detection. 
+
+ 
+\section{Research directions}
+
+\begin{itemize}
+\item Denoising Diffusions: basic principles
+\item Diffusions for spatio-temporal data: survey by \cite{Yang2024}
+\item Step 1: Diffusions for anomaly detection: basic principles, eg AnoDDPM by \cite{Wyatt2022}, \href{https://openaccess.thecvf.com/content/CVPR2022W/NTIRE/html/Wyatt_AnoDDPM_Anomaly_Detection_With_Denoising_Diffusion_Probabilistic_Models_Using_Simplex_CVPRW_2022_paper.html}{open access} and later improvement by \cite{Bercea2023} with AutoDDPM. 
+
+Note that in contrast to AnoDPPM, we rather target subtle and small anomalies. 
+
+More recent survey for diffusions and UAD: \cite{}. 
+
+\item Step 2: Mixed Effect models to account for longitudinal data with irregular and sparse time steps.
+
+\item Step 3: VAE have been combined with Mixed effect models \cite{Sauty2022}. Is it possible to combine diffusions with MEMs? 
+
+\end{itemize}
+
+\section{Models and methods}
+
+\subsection{Mixed effect models}
+
+\begin{itemize} 
+ \item Introduction to these models : \href{https://stats.oarc.ucla.edu/other/mult-pkg/introduction-to-linear-mixed-models/}{link}
+
+\item More complete  presentation with R code : \href{https://cambiotraining.github.io/stats-mixed-effects-models/materials/03-independence-psuedoreplication.html}{link}
+
+\item Another  presentation with a notebook in python ( and an example of Leaspy in  TP2) : \href{https://disease-progression-modelling.github.io/pages/notebooks/disease_course_mapping/TP1_LMM.html}{link}
+
+\end{itemize}
+
+
+
+\subsection{Denoising diffusions}
+\subsubsection{DDPM basic principles}
+
+\begin{itemize}
+
+    \item Materials for lectures on diffusion models for IE University (C4\_466671 - Advanced Artificial Intelligence) \href{https://julioasotodv.github.io/ie-c4-466671-diffusion-models/about.html}{link}
+    
+    \item Annotated diffusion models: \href{https://colab.research.google.com/github/huggingface/notebooks/blob/main/examples/annotated_diffusion.ipynb#scrollTo=b02eb802}{hugging face blogpost}
+    
+    \item Score-baed diffusion model with score matching: \href{https://yang-song.net/blog/2021/score/}{Yang blogpost}
+
+    \item Math derivation for diffusion forward and backward process \href{https://lilianweng.github.io/posts/2021-07-11-diffusion-models/}{Lilian Weng blog post}
+\end{itemize}
+
+
+
+\subsubsection{Latent diffusions}
+
+Check also this paper: \href{https://arxiv.org/pdf/2504.05662}{link}
+
+\subsubsection{Diffusions for longitudinal data}
+
+
+\section{Tasks}
+
+\subsection{Anomaly detection}
+
+\input{sections/1-background}
+
+\input{sections/datasets}
+
+\input{sections/2-implementation}
+
+\section{Other}
+
+\subsection{Bayesian Flow Networks for anomaly detection}
+
+\cite{Graves}
+
+\input{sections/appendix}
+
+% References
+
+\bibliographystyle{apalike}
+\bibliography{anodiffbib}
+
+\end{document}

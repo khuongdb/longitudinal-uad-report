@@ -3,7 +3,7 @@ name: Build, Compress, and Deploy LaTeX PDF
 on:
   push:
     branches:
-      - main  # Trigger on pushes to main branch
+      - main
 
 jobs:
   build-and-deploy:
@@ -11,6 +11,7 @@ jobs:
 
     env:
       PDFSETTING: /ebook  # Ghostscript compression level: /screen /ebook /printer /prepress /default
+      PDF_NAME: master-uad-thesis.pdf
 
     steps:
       # 1. Checkout repository
@@ -21,36 +22,48 @@ jobs:
       - name: Compile LaTeX
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: main.tex  # Replace with your .tex file
+          root_file: main.tex
           latexmk_use_xelatex: true
 
       # 3. Rename PDF
       - name: Rename PDF
-        run: |
-          mv main.pdf master-uad-thesis.pdf
+        run: mv main.pdf $PDF_NAME
 
       # 4. Install Ghostscript
       - name: Install Ghostscript
         run: sudo apt-get update && sudo apt-get install -y ghostscript
 
-      # 5. Compress PDF using Ghostscript
+      # 5. Compress PDF
       - name: Compress PDF
         run: |
-          INPUT="master-uad-thesis.pdf"
-          OUTPUT="master-uad-thesis-compressed.pdf"
+          INPUT="$PDF_NAME"
+          OUTPUT="compressed-$PDF_NAME"
           gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 \
              -dPDFSETTINGS=$PDFSETTING \
              -dNOPAUSE -dQUIET -dBATCH \
              -sOutputFile="$OUTPUT" "$INPUT"
-          # Replace original PDF with compressed version
-          mv master-uad-thesis-compressed.pdf master-uad-thesis.pdf
+          mv "compressed-$PDF_NAME" "$PDF_NAME"
 
-      # 6. Deploy PDF to gh-pages
+      # 6. Prepare deploy folder
+      - name: Prepare deployment folder
+        run: |
+          mkdir deploy
+          mv $PDF_NAME deploy/
+
+      # 7. Deploy only the PDF to gh-pages
       - name: Deploy PDF to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+          publish_dir: deploy
           publish_branch: gh-pages
           keep_files: false
           force_orphan: true
+
+      # 8. Print direct link to PDF
+      - name: Print direct link to PDF
+        run: |
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          USER_NAME=${GITHUB_REPOSITORY%/*}
+          echo "Your PDF is deployed at:"
+          echo "https://${USER_NAME}.github.io/${REPO_NAME}/$PDF_NAME"

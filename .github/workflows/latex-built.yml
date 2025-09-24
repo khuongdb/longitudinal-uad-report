@@ -9,26 +9,44 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    env:
+      PDFSETTING: /ebook  # options: /screen /ebook /printer /prepress /default
+
     steps:
-      # 1. Checkout the repository
+      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Compile LaTeX
-      - name: Compile LaTeX to PDF
+      # 2. Compile LaTeX to PDF
+      - name: Compile LaTeX
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: main.tex  
-          latexmk_use_xelatex: true  # optional: use xelatex
+          root_file: main.tex  # replace with your .tex file
+          latexmk_use_xelatex: true
 
-      # 3. Deploy PDF to gh-pages
+      # 3. Rename PDF
+      - name: Rename PDF
+        run: |
+          mv main.pdf master-uad-thesis.pdf
+
+      # 4. Compress PDF using Ghostscript
+      - name: Compress PDF
+        run: |
+          INPUT="master-uad-thesis.pdf"
+          OUTPUT="master-uad-thesis-compressed.pdf"
+          gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 \
+             -dPDFSETTINGS=$PDFSETTING \
+             -dNOPAUSE -dQUIET -dBATCH \
+             -sOutputFile="$OUTPUT" "$INPUT"
+          # Replace original PDF with compressed version
+          mv master-uad-thesis-compressed.pdf master-uad-thesis.pdf
+
+      # 5. Deploy PDF to gh-pages
       - name: Deploy PDF to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: .
           publish_branch: gh-pages
-          keep_files: false        # only keep newly generated files (your PDF)
-          force_orphan: true       # overwrite branch
-          # Only deploy the PDF
-          destination_dir: .
+          keep_files: false
+          force_orphan: true

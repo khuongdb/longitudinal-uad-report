@@ -20,3 +20,5 @@
 {"rule":"EN_COMPOUNDS","sentence":"^\\QWe can follow some post processing steps from existing litarature, such as removing small connected components, but this approach requires prior knowledge about the size of anomalies \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q.\\E$"}
 {"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QFor false positive rates, FAM also exhibits smaller fluctuations than the Yen method, although we do not see the same consistency as for mDICE.\\E$"}
 {"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\Q[AUROC and AUPRC curves for image level score - LAFM score]AUROC and AUPRC curves for image anomaly score with different methods, apply to LAFM anomaly score.\\E$"}
+{"rule":"UPPERCASE_SENTENCE_START","sentence":"^\\Qinterpolation.:\\E$"}
+{"rule":"UPPERCASE_SENTENCE_START","sentence":"^\\Qinterpolation.: we perform linear interpolation in semantic space and spherical interpolation in stochastic one:\\E$"}

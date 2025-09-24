@@ -7,10 +7,10 @@
 % \section{ The Nice property of forward process}
 % \label{app:nice-property}
 
-% This property allows us to jump directly to any noisy image $x_t$ from original image $x_0$ given a timestep $t$. Starting from the forward process equation Eq. \ref{eq:foward}: 
+% This property allows us to jump directly to any noisy image $x_t$ from original image $x_0$ given a timestep $t$. Starting from the forward process equation Eq. \ref{eq:foward}:
 
 % $$
-% q(x_t \mid x_{t-1}) = \mathcal{N}\left(x_t; \sqrt{1 - \beta_t} \, x_{t-1}, \beta_t I\right) \\ 
+% q(x_t \mid x_{t-1}) = \mathcal{N}\left(x_t; \sqrt{1 - \beta_t} \, x_{t-1}, \beta_t I\right) \\
 % $$
 
 % Using the reparameterization trick for the Normal distribution, we can express $x_t$ as a function of a standard normal noise:
@@ -22,7 +22,7 @@
 %     &= \sqrt{\alpha_t} x_{t-1} + \sqrt{1 - \alpha_t} \epsilon
 % \end{align}
 
-% Notice that $x_{t-1}$ can also be developed similarly, and by expanding $x_t$ recursively, we have: 
+% Notice that $x_{t-1}$ can also be developed similarly, and by expanding $x_t$ recursively, we have:
 
 % \begin{align*}
 %     x_t &= \sqrt{\alpha_t} \left( \sqrt{\alpha_{t-1}} x_{t-2} + \sqrt{1 - \alpha_{t-1}} \, \epsilon \right) + \sqrt{1 - \alpha_t} \, \epsilon \\
@@ -39,10 +39,10 @@
 %     \to x_t &= \sqrt{\alpha_t \alpha_{t-1}} \, x_{t-2} + \sqrt{1 - \alpha_t \alpha_{t-1}} \epsilon \\
 %     \text{keep on developing until $x_0$, we have:} \\
 %     x_t &= \sqrt{\prod_{s=1}^{t}\alpha_s} x_0 + \sqrt{1 - \prod_{s=1}^{t}\alpha_s} \epsilon \\
-%     &= \sqrt{\bar{\alpha_t}} x_0 + \sqrt{1 - \bar{\alpha_t}} \epsilon 
+%     &= \sqrt{\bar{\alpha_t}} x_0 + \sqrt{1 - \bar{\alpha_t}} \epsilon
 % \end{align*}
 
-% Using the reparameterization trick again, we can express the conditional probability of $x_t$ given $x_0$ as: 
+% Using the reparameterization trick again, we can express the conditional probability of $x_t$ given $x_0$ as:
 
 % \begin{align*}
 %     p(x_t \mid x_0) = \mathcal{N}(x_t; \sqrt{\bar{\alpha_t}} x_0, (1 - \bar{\alpha_t})\mathbf{I})
@@ -176,74 +176,130 @@
 
 \chapter{Effect of noise level on reconstruction errors}
 
-\cref{fig:effect-noise-example} shows an example of effect of noise level on healthy and anomalous subjects. We observe that when increasing the noise added, the reconstruction errors increase. This can be beneficial to healthy images, but it will reduce the $l1$-errors for anomalous subjects, which reduces the discriminative power of our reconstruction-based method.
+\cref{fig:effect-noise-example-healthy} and \cref{fig:effect-noise-example-ano} show examples of effect of noise level on healthy and anomalous subjects. We observe that when increasing the noise added, the reconstruction errors increase. This can be beneficial to healthy images, but it will reduce the $l1$-errors for anomalous subjects, which reduces the discriminative power of our reconstruction-based method.
 
 \begin{figure}[htbp]
     \centering
-    \begin{subfigure}{0.75\linewidth}
-        \includegraphics[width=\linewidth]{figures/effect_noise_healthy.pdf}
-        \caption{Healthy subject}
-    \end{subfigure}
+    \includegraphics[width=0.75\linewidth]{figures/effect_noise_healthy.pdf}
+    \caption{Effect of noise level on reconstructed images for healthy subject.}
+    \label{fig:effect-noise-example-healthy}
+\end{figure}
 
-    \begin{subfigure}{0.75\linewidth}
-        \includegraphics[width=\linewidth]{figures/effect_noise_darker_circle.pdf}
-        \caption{Anomaly: \texttt{darker\_circle}}
-    \end{subfigure}
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}{0.75\linewidth}
+    \includegraphics[width=\linewidth]{figures/effect_noise_darker_circle.pdf}
+    \caption{Anomaly: \texttt{darker\_circle}}
+  \end{subfigure}
 
-    \begin{subfigure}{0.75\linewidth}
-        \includegraphics[width=\linewidth]{figures/effect_noise_growing_circle.pdf}
-        \caption{Anomaly: \texttt{growing\_circle}}
-    \end{subfigure}
+  \begin{subfigure}{0.75\linewidth}
+    \includegraphics[width=\linewidth]{figures/effect_noise_growing_circle.pdf}
+    \caption{Anomaly: \texttt{growing\_circle}}
+  \end{subfigure}
 
-    \caption{Effect of noise level on reconstructed images for healthy and anomalous subjects.}
-    \label{fig:effect-noise-example}
+  \caption{Effect of noise level on reconstructed images for anomalous subjects.}
+  \label{fig:effect-noise-example-ano}
 \end{figure}
 
 \chapter{Feature Extractor Network}
 \label{app:fe-layer}
 
-\cref{fig:fe-layers} shows an example of feature maps from our feature extractor network $\text{FE} \Phi$. Each feature map is upscaled using linear interpolation to match the original spatial resolution of original image. The color displays the highest activation values across all channels at each pixel position, which is calculated as the mean of all channels. We observe that $\Phi$ effectively captures the perceptual structure of our figures at different scales. In particular, \texttt{stage2} focuses on overall shape of the \texttt{starman}, while \texttt{stage3} highlights the importance controlled points (head, legs and hands) of each figure. \texttt{stage4} operates at smallest resolution ($4, 4$), and due to the effect of upscaling, it does not capture any meaningful part of the original images that we can exploit. This is the reason why we utilize features from \{\texttt{stage2}, \texttt{stage3}\} to calculate our feature distances. 
+\cref{fig:fe-layers} shows an example of feature maps from our feature extractor network $\text{FE} \Phi$. Each feature map is upscaled using linear interpolation to match the original spatial resolution of original image. The color displays the highest activation values across all channels at each pixel position, which is calculated as the mean of all channels. We observe that $\Phi$ effectively captures the perceptual structure of our figures at different scales. In particular, \texttt{stage2} focuses on overall shape of the \texttt{starman}, while \texttt{stage3} highlights the importance controlled points (head, legs and hands) of each figure. \texttt{stage4} operates at smallest resolution ($4, 4$), and due to the effect of upscaling, it does not capture any meaningful part of the original images that we can exploit. This is the reason why we utilize features from \{\texttt{stage2}, \texttt{stage3}\} to calculate our feature distances.
 
 \begin{figure}[htbp]
-    \centering
-    \begin{subfigure}{0.75\linewidth} 
-        \includegraphics[width=\linewidth]{figures/resnet-50-arch.pdf}
-        \caption{ResNet-50 architecture}  
-        \label{fig:resnet50-arch}
-    \end{subfigure}
+  \centering
+  \begin{subfigure}{0.75\linewidth}
+    \includegraphics[width=\linewidth]{figures/resnet-50-arch.pdf}
+    \caption{ResNet-50 architecture}
+    \label{fig:resnet50-arch}
+  \end{subfigure}
 
-    \begin{subfigure}{0.75\linewidth} 
-        \includegraphics[width=\linewidth]{figures/fe-layer-healthy.pdf}
-        \caption{Healthy subject}  
-        \label{fig:fe-layer-healthy}
-    \end{subfigure}
+  \begin{subfigure}{0.75\linewidth}
+    \includegraphics[width=\linewidth]{figures/fe-layer-healthy.pdf}
+    \caption{Healthy subject}
+    \label{fig:fe-layer-healthy}
+  \end{subfigure}
 
-    \begin{subfigure}{0.75\linewidth} 
-        \includegraphics[width=\linewidth]{figures/fe-layer-anomaly.pdf}
-        \caption{Anomaly subject}  
-        \label{fig:fe-layer-anomaly}
-    \end{subfigure}
-    \caption[Example feature maps from semantic encoder]{Example outputs from layers of Feature Extractor network $\Phi$ in \ac{SDM}. \cref{fig:resnet50-arch} shows ResNet-50 architecture. \cref{fig:fe-layer-healthy} and \cref{fig:fe-layer-anomaly} display example of outputs for healthy and anomalous subject, respectively. Notation: \texttt{stage2}, \texttt{stage3} and \texttt{stage4} from ResNet architecture correspond to \texttt{layer1}, \texttt{layer2} and \texttt{layer3} in our paper, respectively.}
-    \label{fig:fe-layers}
+  \begin{subfigure}{0.75\linewidth}
+    \includegraphics[width=\linewidth]{figures/fe-layer-anomaly.pdf}
+    \caption{Anomaly subject}
+    \label{fig:fe-layer-anomaly}
+  \end{subfigure}
+  \caption[Example feature maps from semantic encoder]{Example outputs from layers of Feature Extractor network $\Phi$ in \ac{SDM}. \cref{fig:resnet50-arch} shows ResNet-50 architecture. \cref{fig:fe-layer-healthy} and \cref{fig:fe-layer-anomaly} display example of outputs for healthy and anomalous subject, respectively. Notation: \texttt{stage2}, \texttt{stage3} and \texttt{stage4} from ResNet architecture correspond to \texttt{layer1}, \texttt{layer2} and \texttt{layer3} in our paper, respectively.}
+  \label{fig:fe-layers}
+\end{figure}
+
+\chapter{Stochastic subcode manipulation}
+
+We know that the stochastic subcode $\rvx_T^{\text{infer}}$ contains the fine-grained details about origin input, that the semantic encoder fails to capture. As shown in \cite{lozuponeLDAE2025,DiffAE}, this stochastic subcode, in combination with the semantic subcode from semantic encoder, is a powerful tool (latent variable) for us to manipulate the reconstructed images because they provide the best information of input. In this section, we show an example of utilizing this subcode to impute the missing images by interpolation. Given a starting time point $\mathbf{x}_{s}$ and ending time point $\mathbf{x}_{e}$, we can impute the missing images $\mathbf{x}_l$ at time point $s < l < e$ by interpolating both semantic subcode and stochastic subcode. From the two input time points, we can extract their semantic and stochastic representation $(\mathbf{y}_{\text{sem}}^s, \mathbf{y}_{\text{sem}}^e)$ and $(\mathbf{x}_{\text{infer}}^s, \mathbf{x}_{\text{infer}}^e)$, respectively. Based on these spaces, the intermediate semantic and stochastic subcode of $\mathbf{x}_l$ can be formulated using two methods, following \cite{lozuponeLDAE2025}:
+
+\paragraph{\texttt{lerp-slerp} interpolation}: we perform linear interpolation in semantic space and spherical interpolation in stochastic one:
+
+\begin{align*}
+  \mathrm{LERP}(\mathbf{y}_{\text{sem}}^s, \mathbf{y}_{\text{sem}}^e; \alpha) &= (1 - \alpha) \mathbf{y}_{\text{sem}}^s + \alpha \mathbf{y}_{\text{sem}}^e \\
+  \mathrm{SLERP}(\mathbf{x}_{\text{infer}}^s, \mathbf{x}_{\text{infer}}^e; \alpha) &=
+  \frac{\sin((1 - \alpha)\theta)}{\sin(\theta)} \mathbf{x}_{\text{infer}}^s +
+  \frac{\sin(\alpha \theta)}{\sin(\theta)} \mathbf{x}_{\text{infer}}^e
+\end{align*}
+
+where the angle $\theta$ between $\langle \mathbf{x}_{\text{infer}}^s, \mathbf{x}_{\text{infer}}^e \rangle$ is calculated as: 
+\begin{align*}
+    \theta = \arccos \left( \frac{\langle \mathbf{x}_{\text{infer}}^s, \mathbf{x}_{\text{infer}}^e \rangle}{\| \mathbf{x}_{\text{infer}}^s \| \cdot \| \mathbf{x}_{\text{infer}}^e \|} \right)
+\end{align*}
+
+Coefficient $\alpha$ is the offset of target time point $l$ with respect to the starting and ending time points, and is defined as $\alpha = \frac{l - s}{e - s}$. We note that $\alpha \in [0, 1]$. Subsequently, $\mathbf{x}_l$ is imputed as reconstruction (decode) image by using $(\mathbf{y}_{\text{sem}}^l, \mathbf{x}_{\text{infer}}^l)$
+
+\paragraph{\texttt{lerp-lerp} interpolation}: we perform linear interpolation in both semantic and stochastic space, using the same above formulas. 
+
+\cref{fig:interpolation-healthy} and \cref{fig:interpolation-ano} show quantitative examples of interpolation using both methods, for both healthy and anomalous subjects. 
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}{0.8\linewidth}
+    \includegraphics[width=\linewidth]{figures/interpolation-lerp-lerp-id-50.pdf}
+    \caption{\texttt{lerp-lerp} interpolation}
+  \end{subfigure}
+
+  \begin{subfigure}{0.8\linewidth}
+    \includegraphics[width=\linewidth]{figures/interpolation-lerp-slerp-id-50.pdf}
+    \caption{\texttt{lerp-slerp} interpolation}
+  \end{subfigure}
+  \caption{Interpolation from stochastic subcode for healthy subject. }
+  \label{fig:interpolation-healthy}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}{0.8\linewidth}
+    \includegraphics[width=\linewidth]{figures/interpolation-lerp-lerp-id-165.pdf}
+    \caption{\texttt{lerp-lerp} interpolation}
+  \end{subfigure}
+
+  \begin{subfigure}{0.8\linewidth}
+    \includegraphics[width=\linewidth]{figures/interpolation-lerp-slerp-id-165.pdf}
+    \caption{\texttt{lerp-slerp} interpolation}
+  \end{subfigure}
+  \caption{Interpolation from stochastic subcode for healthy subject. }
+  \label{fig:interpolation-ano}
 \end{figure}
 
 % \clearpage
 \chapter{More examples of LAFM Anomaly score maps}
 \begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.75\linewidth]{figures/app-lafm-healthy.pdf}
-    \caption[Example: anomaly segmentation from LAFM - \texttt{healthy} subject]{Example of anomaly score map from LAFM for healthy subject. From top to bottom: input score map (from FAM), anomaly map references, updated score map (LAFM), anomaly segmentation (Yen threshold).}   
+  \centering
+  \includegraphics[width=0.75\linewidth]{figures/app-lafm-healthy.pdf}
+  \caption[Example: anomaly segmentation from LAFM - \texttt{healthy} subject]{Example of anomaly score map from LAFM for healthy subject. From top to bottom: input score map (from FAM), anomaly map references, updated score map (LAFM), anomaly segmentation (Yen threshold).}
 \end{figure}
 
 \begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.75\linewidth]{figures/app-lafm-darkercircle.pdf}
-    \caption[Example: anomaly segmentation from LAFM - \texttt{darker\_circle}]{Example of anomaly score map from LAFM for anomaly \texttt{darker\_circle} subject. From top to bottom: input score map (from FAM), anomaly map references, updated score map (LAFM), anomaly segmentation (Yen threshold) and ground truth annotation.}   
+  \centering
+  \includegraphics[width=0.75\linewidth]{figures/app-lafm-darkercircle.pdf}
+  \caption[Example: anomaly segmentation from LAFM - \texttt{darker\_circle}]{Example of anomaly score map from LAFM for anomaly \texttt{darker\_circle} subject. From top to bottom: input score map (from FAM), anomaly map references, updated score map (LAFM), anomaly segmentation (Yen threshold) and ground truth annotation.}
 \end{figure}
 
 \begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.75\linewidth]{figures/app-lafm-darkerline.pdf}
-    \caption[Example: anomaly segmentation from LAFM - \texttt{darker\_line}]{Example of anomaly score map from LAFM for anomaly \texttt{darker\_line} subject. From top to bottom: input score map (from FAM), anomaly map references, updated score map (LAFM), anomaly segmentation (Yen threshold) and ground truth annotation.}   
+  \centering
+  \includegraphics[width=0.75\linewidth]{figures/app-lafm-darkerline.pdf}
+  \caption[Example: anomaly segmentation from LAFM - \texttt{darker\_line}]{Example of anomaly score map from LAFM for anomaly \texttt{darker\_line} subject. From top to bottom: input score map (from FAM), anomaly map references, updated score map (LAFM), anomaly segmentation (Yen threshold) and ground truth annotation.}
 \end{figure}
 \FloatBarrier

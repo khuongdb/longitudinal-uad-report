@@ -247,11 +247,9 @@ where the angle $\theta$ between $\langle \mathbf{x}_{\text{infer}}^s, \mathbf{x
     \theta = \arccos \left( \frac{\langle \mathbf{x}_{\text{infer}}^s, \mathbf{x}_{\text{infer}}^e \rangle}{\| \mathbf{x}_{\text{infer}}^s \| \cdot \| \mathbf{x}_{\text{infer}}^e \|} \right)
 \end{align*}
 
-Coefficient $\alpha$ is the offset of target time point $l$ with respect to the starting and ending time points, and is defined as $\alpha = \frac{l - s}{e - s}$. We note that $\alpha \in [0, 1]$. Subsequently, $\mathbf{x}_l$ is imputed as reconstruction (decode) image by using $(\mathbf{y}_{\text{sem}}^l, \mathbf{x}_{\text{infer}}^l)$
-
 \paragraph{\texttt{lerp-lerp} interpolation}: we perform linear interpolation in both semantic and stochastic space, using the same above formulas. 
 
-\cref{fig:interpolation-healthy} and \cref{fig:interpolation-ano} show quantitative examples of interpolation using both methods, for both healthy and anomalous subjects. 
+Coefficient $\alpha$ is the offset of target time point $l$ with respect to the starting and ending time points, and is defined as $\alpha = \frac{l - s}{e - s}$. We note that $\alpha \in [0, 1]$. Subsequently, $\mathbf{x}_l$ is imputed as reconstruction (decode) image by using $(\mathbf{y}_{\text{sem}}^l, \mathbf{x}_{\text{infer}}^l)$. \cref{fig:interpolation-healthy} and \cref{fig:interpolation-ano} show quanlitative examples of interpolation using both methods, for both healthy and anomalous subjects. 
 
 \begin{figure}[htbp]
   \centering
@@ -279,12 +277,13 @@ Coefficient $\alpha$ is the offset of target time point $l$ with respect to the 
     \includegraphics[width=\linewidth]{figures/interpolation-lerp-slerp-id-165.pdf}
     \caption{\texttt{lerp-slerp} interpolation}
   \end{subfigure}
-  \caption{Interpolation from stochastic subcode for healthy subject. }
+  \caption{Interpolation from stochastic subcode for anomalous subject. }
   \label{fig:interpolation-ano}
 \end{figure}
 
 % \clearpage
-\chapter{More examples of LAFM Anomaly score maps}
+\chapter{LAFM Anomaly score maps}
+\section{More examples of segmentation using LAFM}
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.75\linewidth]{figures/app-lafm-healthy.pdf}
@@ -302,4 +301,13 @@ Coefficient $\alpha$ is the offset of target time point $l$ with respect to the 
   \includegraphics[width=0.75\linewidth]{figures/app-lafm-darkerline.pdf}
   \caption[Example: anomaly segmentation from LAFM - \texttt{darker\_line}]{Example of anomaly score map from LAFM for anomaly \texttt{darker\_line} subject. From top to bottom: input score map (from FAM), anomaly map references, updated score map (LAFM), anomaly segmentation (Yen threshold) and ground truth annotation.}
 \end{figure}
-\FloatBarrier
+
+\section{LAFM parameters}
+In \cref{sec:method-lafm}, we introduce two hyperparameters in our LAFM module: $\beta$ controls the level of correction to eliminate false positive, and $\gamma$ to eliminate false negative. \cref{fig:mdice-beta-gamma} shows the segmentation performances of varying values of $\beta$ and $\gamma$.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{figures/mdice-beta-gamma.pdf}
+    \caption[Effect of hyperparameters $\beta, \gamma$ on segmentation performance of LAFM.]{Effect of hyperparameters $\beta, \gamma$ on segmentation performance of LAFM. The best results (min value for FP\% and max value for mDICE\%) are highlighted by blue boxes.}
+    \label{fig:mdice-beta-gamma}
+\end{figure}

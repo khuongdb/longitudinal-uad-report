@@ -174,9 +174,35 @@
 % \end{table}
 % \FloatBarrier
 
+\chapter{Effect of noise level on reconstruction errors}
+
+\cref{fig:effect-noise-example} shows an example of effect of noise level on healthy and anomalous subjects. We observe that when increasing the noise added, the reconstruction errors increase. This can be beneficial to healthy images, but it will reduce the $l1$-errors for anomalous subjects, which reduces the discriminative power of our reconstruction-based method.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.75\linewidth}
+        \includegraphics[width=\linewidth]{figures/effect_noise_healthy.pdf}
+        \caption{Healthy subject}
+    \end{subfigure}
+
+    \begin{subfigure}{0.75\linewidth}
+        \includegraphics[width=\linewidth]{figures/effect_noise_darker_circle.pdf}
+        \caption{Anomaly: \texttt{darker\_circle}}
+    \end{subfigure}
+
+    \begin{subfigure}{0.75\linewidth}
+        \includegraphics[width=\linewidth]{figures/effect_noise_growing_circle.pdf}
+        \caption{Anomaly: \texttt{growing\_circle}}
+    \end{subfigure}
+
+    \caption{Effect of noise level on reconstructed images for healthy and anomalous subjects.}
+    \label{fig:effect-noise-example}
+\end{figure}
 
 \chapter{Feature Extractor Network}
 \label{app:fe-layer}
+
+\cref{fig:fe-layers} shows an example of feature maps from our feature extractor network $\text{FE} \Phi$. Each feature map is upscaled using linear interpolation to match the original spatial resolution of original image. The color displays the highest activation values across all channels at each pixel position, which is calculated as the mean of all channels. We observe that $\Phi$ effectively captures the perceptual structure of our figures at different scales. In particular, \texttt{stage2} focuses on overall shape of the \texttt{starman}, while \texttt{stage3} highlights the importance controlled points (head, legs and hands) of each figure. \texttt{stage4} operates at smallest resolution ($4, 4$), and due to the effect of upscaling, it does not capture any meaningful part of the original images that we can exploit. This is the reason why we utilize features from \{\texttt{stage2}, \texttt{stage3}\} to calculate our feature distances. 
 
 \begin{figure}[htbp]
     \centering

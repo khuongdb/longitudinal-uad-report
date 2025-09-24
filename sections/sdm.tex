@@ -1,7 +1,7 @@
 \chapter{Proposed Frameworks for Spatial-Temporal UAD}
 \label{chap:sdm}
 
-In this section, we introduce our proposed framework for Spatial-Temporal unsupervised anomaly detection, comprises two main modules: Spatial Diffusion Model \ac{SDM} (\cref{sec:sdm}) and Anomaly Detection Module (\cref{sec:fam}). During the training of \ac{SDM}, we remove all temporal dependencies between samples and treat them as independent. \ac{SDM} accounts only for the spatial representations of the input. At inference, we add back the temporal dependencies using longitudinal module to increase the accuracy of anomaly segmentation. 
+In this section, we introduce our proposed framework for Spatial-Temporal unsupervised anomaly detection, comprises two main modules: \ac{SDM} (\cref{sec:sdm}) and Anomaly Detection Module (\cref{sec:fam}). During the training of \ac{SDM}, we remove all temporal dependencies between samples and treat them as \emph{i.i.d} sample. \ac{SDM} accounts only for the spatial representations of the input. At inference, we add back the temporal dependencies using longitudinal module to increase the accuracy of anomaly segmentation. 
 
 \minitoc
 

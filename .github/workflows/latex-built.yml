@@ -1,0 +1,34 @@
+name: Build LaTeX and Deploy PDF
+
+on:
+  push:
+    branches:
+      - main  # Trigger on pushes to main branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Compile LaTeX
+      - name: Compile LaTeX to PDF
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex  
+          latexmk_use_xelatex: true  # optional: use xelatex
+
+      # 3. Deploy PDF to gh-pages
+      - name: Deploy PDF to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: gh-pages
+          keep_files: false        # only keep newly generated files (your PDF)
+          force_orphan: true       # overwrite branch
+          # Only deploy the PDF
+          destination_dir: .
